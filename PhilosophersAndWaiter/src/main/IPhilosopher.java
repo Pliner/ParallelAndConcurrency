@@ -1,9 +1,8 @@
 package main;
 
-public interface IPhilosopher {
-    void eat(IWaiter waiter) throws InterruptedException;
-    void think();
+public interface IPhilosopher extends Runnable{
     String getStatistics();
+    void stop();
 }
 
 

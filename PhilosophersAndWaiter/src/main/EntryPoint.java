@@ -1,10 +1,9 @@
 package main;
 
 public class EntryPoint {
-    public static void main(String [] args) {
+    public static void main(String[] args) {
 
-        args = new String[] {"10", "10", "100", "100", "1"};
-        if(args.length != 5) {
+        if (args.length != 5) {
             System.out.println("Usage: *.jar philCount executionTimeSeconds thinkTimeMs eatTimeMs debugMode");
         }
 

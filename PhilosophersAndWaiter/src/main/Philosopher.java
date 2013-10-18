@@ -10,33 +10,21 @@ public final class Philosopher implements IPhilosopher, ICateredPhilosopher {
     private final Lock lock;
     private final Condition eatCondition;
     private volatile boolean canEat = false;
+    private volatile boolean canContinue = true;
+    private final IWaiter waiter;
     private final IPhilosopherConfiguration configuration;
     private final IPhilosopherActionsLogger actionsLogger;
     private final Random random = new Random();
 
-    public Philosopher(IPhilosopherConfiguration configuration, IPhilosopherActionsLogger philosopherActionLogger) {
+    public Philosopher(IWaiter waiter, IPhilosopherConfiguration configuration, IPhilosopherActionsLogger philosopherActionLogger) {
+        this.waiter = waiter;
         this.configuration = configuration;
         this.actionsLogger = philosopherActionLogger;
         this.lock = new ReentrantLock();
         this.eatCondition = lock.newCondition();
     }
 
-    @Override
-    public void eat(IWaiter waiter) throws InterruptedException {
-        lock();
-        try {
-            waiter.makeOrder(this);
-            while (!canEat())
-                awaitEat();
-            doEat();
-            setEatDone();
-            waiter.thanks(this);
-        } finally {
-            unlock();
-        }
-    }
-
-    private void doEat() {
+    private void eat() {
         actionsLogger.takeForks();
         actionsLogger.eating();
         try {
@@ -46,7 +34,7 @@ public final class Philosopher implements IPhilosopher, ICateredPhilosopher {
         actionsLogger.putForks();
     }
 
-    private void setEatDone() {
+    private void eatDone() {
         canEat = false;
     }
 
@@ -54,8 +42,7 @@ public final class Philosopher implements IPhilosopher, ICateredPhilosopher {
         return canEat;
     }
 
-    @Override
-    public void think() {
+    private void think() {
         actionsLogger.thinking();
         try {
             TimeUnit.MILLISECONDS.sleep(random.nextInt(configuration.getThinkTimeMs()));
@@ -67,6 +54,11 @@ public final class Philosopher implements IPhilosopher, ICateredPhilosopher {
     @Override
     public String getStatistics() {
         return actionsLogger.getStatistics();
+    }
+
+    @Override
+    public void stop() {
+        canContinue = false;
     }
 
     private void lock() {
@@ -99,6 +91,30 @@ public final class Philosopher implements IPhilosopher, ICateredPhilosopher {
     @Override
     public IFork getRight() {
         return configuration.getRight();
+    }
+
+    @Override
+    public void run() {
+        while (canContinue) {
+            think();
+            lock();
+            try {
+                waiter.makeOrder(this);
+                while (!canEat()) {
+                    if (canContinue)
+                        awaitEat();
+                    else
+                        return;
+                }
+                eat();
+                eatDone();
+                waiter.thanks(this);
+            } catch (InterruptedException e) {
+                return;
+            } finally {
+                unlock();
+            }
+        }
     }
 
     private class PhilosopherAction implements ICateredAction {

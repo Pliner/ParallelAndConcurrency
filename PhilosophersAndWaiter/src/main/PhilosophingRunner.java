@@ -6,16 +6,18 @@ public class PhilosophingRunner {
     public static void run(final int philosopherCount, final int executionTimeInSeconds, final int thinkTimeMS, final int eatTimeMS, final int debugMode) {
 
         Thread[] threads = new Thread[philosopherCount];
-        PhilosophisingProcess[] philosophisingProcesses = new PhilosophisingProcess[philosopherCount];
+        IPhilosopher[] philosophers = new Philosopher[philosopherCount];
+        IFork[] forks = new Fork[philosopherCount];
         IWaiter waiter = new Waiter();
-        int forId = 0;
-        IFork last = new Fork(forId++);
-        IFork left = last;
+        for(int index = 0; index < philosopherCount; ++index)
+            forks[index] = new Fork(index);
+
+
         for(int index = 0; index < philosopherCount; ++index){
             final int id = index;
-            final IFork localLeft = left;
-            final IFork localRight = (index == philosopherCount - 1) ? last : new Fork(forId++);
-            IPhilosopher philosopher = new Philosopher(new IPhilosopherConfiguration() {
+            final IFork localLeft = forks[index];
+            final IFork localRight = forks[(index + 1) % philosopherCount];
+            IPhilosopher philosopher = new Philosopher(waiter, new IPhilosopherConfiguration() {
                 @Override
                 public int getId() {
                     return id;
@@ -51,32 +53,31 @@ public class PhilosophingRunner {
                     return debugMode == 1;
                 }
             }));
-            final PhilosophisingProcess philosophisingProcess = new PhilosophisingProcess(philosopher, waiter);
-            philosophisingProcesses[index] = philosophisingProcess;
-            threads[index] = new Thread(philosophisingProcess);
-            left = localRight;
+            philosophers[index] = philosopher;
         }
-        for (int i = 0; i < philosopherCount; ++i)
-            threads[i].start();
+        for (int index = 0; index < philosopherCount; ++index) {
+            threads[index] = new Thread(philosophers[index]);
+            threads[index].start();
+        }
+
+
         try {
             TimeUnit.SECONDS.sleep(executionTimeInSeconds);
         } catch (InterruptedException e) {
         }
 
-        for (PhilosophisingProcess phil : philosophisingProcesses) {
+        for (IPhilosopher phil : philosophers) {
             phil.stop();
         }
         for (Thread thread : threads) {
             try {
                 thread.interrupt();
-                thread.join(100);
+                thread.join();
             } catch (InterruptedException e) {
-                System.out.println(thread.getId());
-                e.printStackTrace();
             }
         }
-        for (PhilosophisingProcess phil : philosophisingProcesses) {
-            System.out.println(phil.philosopher.getStatistics());
+        for (IPhilosopher phil : philosophers) {
+            System.out.println(phil.getStatistics());
         }
     }
 }

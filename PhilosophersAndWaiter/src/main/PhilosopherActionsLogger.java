@@ -3,13 +3,16 @@ package main;
 public final class PhilosopherActionsLogger implements IPhilosopherActionsLogger {
     private final IPhilosopherActionsLoggerConfiguration configuration;
     private int eatCount = 0;
+    private long waitTimeMs = 0;
+    private long startWaitMs;
 
     public PhilosopherActionsLogger(IPhilosopherActionsLoggerConfiguration configuration) {
         this.configuration = configuration;
     }
 
     @Override
-    public synchronized void eating() {
+    public void eating() {
+        waitTimeMs += System.currentTimeMillis() - startWaitMs;
         eatCount++;
         if (configuration.isDebugMode())
             System.out.println("[" + configuration.getId() + "] eating");
@@ -25,6 +28,7 @@ public final class PhilosopherActionsLogger implements IPhilosopherActionsLogger
     public void hungry() {
         if (configuration.isDebugMode())
             System.out.println("[" + configuration.getId() + "] hungry");
+        startWaitMs = System.currentTimeMillis();
     }
 
     @Override
@@ -45,6 +49,6 @@ public final class PhilosopherActionsLogger implements IPhilosopherActionsLogger
 
     @Override
     public synchronized String getStatistics() {
-        return "[" + configuration.getId() + "] " + eatCount;
+        return "[" + configuration.getId() + "] " + eatCount + " " + waitTimeMs;
     }
 }

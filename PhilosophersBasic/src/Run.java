@@ -10,7 +10,7 @@ public class Run {
         Fork left = last;
         for (int i = 0; i < count; i++) {
             Fork right = (i == count - 1) ? last : new Fork(++lastId);
-            phils[i] = new Philosopher(i, left, right);
+            phils[i] = new Philosopher(i, count, left, right);
             left = right;
         }
 
