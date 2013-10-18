@@ -21,32 +21,38 @@ public class CrawlerUtils {
 
     public static String getContent(URL url) {
         StringBuilder page = new StringBuilder ();
-        BufferedReader in;
+        BufferedReader in = null;
         try {
             URLConnection conn = url.openConnection();
             String contentType = conn.getContentType();
             if (contentType != null && contentType.startsWith("text/html")) {
                 if (contentType.indexOf("charset=") == -1) {
-                    in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+                    in = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"), 8192 * 100);
                 } else {
                     String encoding = contentType.substring(contentType.indexOf("charset=") + 8);
-                    in = new BufferedReader(new InputStreamReader(conn.getInputStream(), encoding));
+                    in = new BufferedReader(new InputStreamReader(conn.getInputStream(), encoding), 8192 * 100);
                 }
                 String str;
                 while ((str = in.readLine()) != null) {
                     page.append(str);
                 }
-                in.close();
                 return page.toString();
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if(in != null)
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
         }
         return null;
     }
 
     public static Set<URL> getLinks(URL url, String content) {
-        Set<URL> links = new HashSet<URL>();
+        Set<URL> links = new HashSet<>();
         Matcher matcher = linkPattern.matcher(content);
         while (matcher.find()) {
             try {
@@ -59,6 +65,7 @@ public class CrawlerUtils {
     }
 
     public static void main(String[] args) {
+        args = new String[] {"in", "http://www.yandex.ru"};
         BufferedWriter output = null;
         try {
 
