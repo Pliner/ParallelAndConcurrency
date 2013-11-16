@@ -2,9 +2,10 @@ package main;
 
 public class EntryPoint {
     public static void main(String[] args) {
+        args = new String[] {"5", "60", "100", "100", "1"};
 
         if (args.length != 5) {
-            System.out.println("Usage: *.jar philCount executionTimeSeconds thinkTimeMs eatTimeMs debugMode");
+            System.out.println("Usage: philosophers philCount executionTimeSeconds thinkTimeMs eatTimeMs debugMode");
         }
 
         int philosopherCount = Integer.parseInt(args[0]);

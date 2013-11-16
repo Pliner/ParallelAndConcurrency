@@ -14,24 +14,23 @@ public abstract class PhilosopherBase {
 
     protected void eat() {
         waitTime += System.currentTimeMillis() - startWait;
-        System.out.println("[PhilosopherBase " + position + "] is eating");
+        System.out.println("[" + position + "] is eating");
         try {
             Thread.sleep(rnd.nextInt(100));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         eatCount++;
-        System.out.println("[PhilosopherBase " + position + "] finished eating");
+        System.out.println("[" + position + "] finished eating");
     }
 
     protected void think() {
-        System.out.println("[PhilosopherBase " + position + "] is thinking");
+        System.out.println("[" + position + "] is thinking");
         try {
             Thread.sleep(rnd.nextInt(100));
         } catch (InterruptedException e) {
-            e.printStackTrace();
         }
-        System.out.println("[PhilosopherBase " + position + "] is hungry");
+        System.out.println("[" + position + "] is hungry");
         startWait = System.currentTimeMillis();
     }
 

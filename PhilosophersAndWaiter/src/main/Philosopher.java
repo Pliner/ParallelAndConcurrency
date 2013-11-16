@@ -61,23 +61,6 @@ public final class Philosopher implements IPhilosopher, ICateredPhilosopher {
         canContinue = false;
     }
 
-    private void lock() {
-        lock.lock();
-    }
-
-    private void unlock() {
-        lock.unlock();
-    }
-
-    private void signalEat() {
-        canEat = true;
-        eatCondition.signal();
-    }
-
-    private void awaitEat() throws InterruptedException {
-        eatCondition.await();
-    }
-
     @Override
     public ICateredAction getAction() {
         return new PhilosopherAction();
@@ -115,6 +98,26 @@ public final class Philosopher implements IPhilosopher, ICateredPhilosopher {
                 unlock();
             }
         }
+    }
+
+
+
+
+    private void lock() {
+        lock.lock();
+    }
+
+    private void unlock() {
+        lock.unlock();
+    }
+
+    private void signalEat() {
+        canEat = true;
+        eatCondition.signal();
+    }
+
+    private void awaitEat() throws InterruptedException {
+        eatCondition.await();
     }
 
     private class PhilosopherAction implements ICateredAction {

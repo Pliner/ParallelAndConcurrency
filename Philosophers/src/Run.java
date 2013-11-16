@@ -1,16 +1,15 @@
 public class Run {
 
-    static final int count = 50;
+    static final int count = 5;
 
     public static void main(String[] args) throws Exception {
-        Philosopher[] phils = new Philosopher[count];
+        MyPhilosopher[] phils = new MyPhilosopher[count];
 
-        int lastId = 0;
-        Fork last = new Fork(++lastId);
+        Fork last = new Fork();
         Fork left = last;
         for (int i = 0; i < count; i++) {
-            Fork right = (i == count - 1) ? last : new Fork(++lastId);
-            phils[i] = new Philosopher(i, count, left, right);
+            Fork right = (i == count - 1) ? last : new Fork();
+            phils[i] = new MyPhilosopher(i, left, right);
             left = right;
         }
 
@@ -22,15 +21,15 @@ public class Run {
 
         Thread.sleep(60000);
 
-        for (Philosopher phil : phils) {
+        for (MyPhilosopher phil : phils) {
             phil.stopFlag = true;
         }
         for (Thread thread : threads) {
             thread.join();
         }
 
-        for (Philosopher phil : phils) {
-            System.out.println("[PhilosopherBase " + phil.position + "] ate "
+        for (MyPhilosopher phil : phils) {
+            System.out.println("[Philosopher " + phil.position + "] ate " 
                     + phil.eatCount + " times and waited " + phil.waitTime + " ms");
         }
     }

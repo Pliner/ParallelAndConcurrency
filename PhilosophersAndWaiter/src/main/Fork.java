@@ -7,10 +7,6 @@ public final class Fork implements IFork {
     public Fork(int id) {
         this.id = id;
     }
-    @Override
-    public int getId() {
-        return id;
-    }
 
     @Override
     public String toString() {
