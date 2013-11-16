@@ -5,6 +5,7 @@
 #include <vector>
 #include <cstdlib>
 #include <ctime>
+#include <time.h>
 
 using namespace std;
 
@@ -129,7 +130,9 @@ int main(int argc , char** argv) {
         std::printf("Usage: %s number_of_clusters input_file output_file\n", argv[0]);
         return 1;
     }
-    const clock_t begin_time = clock();
+	
+	time_t start,end;
+	time (&start);
     int K = atoi(argv[1]);
 
     char* input_file = argv[2];
@@ -158,7 +161,9 @@ int main(int argc , char** argv) {
 
     WriteOutput(clusters, output);
     output.close();
-
-	std::cout << float( clock () - begin_time ) /  CLOCKS_PER_SEC;
+	
+	time (&end);
+	double dif = difftime (end,start);
+	printf ("Elasped time is %.2lf seconds.\r\n", dif );
     return 0;
 }

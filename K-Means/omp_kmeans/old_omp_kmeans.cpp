@@ -5,7 +5,7 @@
 #include <vector>
 #include <cstdlib>
 #include <omp.h>
-#include <time.h>
+#include <ctime>
 
 using namespace std;
 
@@ -67,15 +67,6 @@ vector<int> KMeans(const Points& data, int K) {
         centroids[i] = data[UniformRandom(data_size - 1)];
     }
 
-	int n_threads = omp_get_max_threads();
-	vector<Points> thread_local_centroids(n_threads);
-	vector< vector<int> > thread_local_centroids_sizes(n_threads);
-	
-	for(int i = 0; i < n_threads; ++i) {
-		thread_local_centroids[i].assign(K, Point(dimensions));
-		thread_local_centroids_sizes[i].assign(K, 0);
-	} 
-
     bool converged = false;
     while (!converged) {
         converged = true;
@@ -95,29 +86,20 @@ vector<int> KMeans(const Points& data, int K) {
         vector<int> clusters_sizes(K);
         centroids.assign(K, Point(dimensions)); 
 		
-		#pragma omp parallel
-		{
-			int t = omp_get_thread_num();
-			#pragma omp parallel for
-			for (int i = 0; i < data_size; ++i) {
-				for (int d = 0; d < dimensions; ++d) {
-					thread_local_centroids[t][clusters[i]][d] += data[i][d];
-				}		
-				++thread_local_centroids_sizes[t][clusters[i]];
-			}
+		for (int i = 0; i < data_size; ++i) {
+			for (int d = 0; d < dimensions; ++d) {
+				centroids[clusters[i]][d] += data[i][d];
+			}		
+			++clusters_sizes[clusters[i]];
 		}
 
-		//reduce results
-		for(int t = 0; t < n_threads; ++t) {
-			for(int k = 0; k < K; ++k) {	
-				clusters_sizes[k] += thread_local_centroids_sizes[t][k];
-				thread_local_centroids_sizes[t][k] = 0;
-				for(int d = 0; d < dimensions; ++d) {
-					centroids[k][d] += thread_local_centroids[t][k][d];
-					thread_local_centroids[t][k][d] = 0;
-				}
-			}
+		for (int i = 0; i < data_size; ++i) {
+			for (int d = 0; d < dimensions; ++d) {
+				centroids[clusters[i]][d] += data[i][d];
+			}		
+			++clusters_sizes[clusters[i]];
 		}
+		
 
         for (int i = 0; i < K; ++i) {
             if (clusters_sizes[i] != 0) {
@@ -159,9 +141,9 @@ int main(int argc , char** argv) {
         std::printf("Usage: %s number_of_clusters input_file output_file\n", argv[0]);
         return 1;
     }
-	time_t start,end;
-	time (&start);
-	int K = atoi(argv[1]);
+	omp_set_num_threads(4);
+    const clock_t begin_time = clock();
+    int K = atoi(argv[1]);
 
     char* input_file = argv[2];
     ifstream input;
@@ -190,9 +172,6 @@ int main(int argc , char** argv) {
     WriteOutput(clusters, output);
     output.close();
 
-	
-	time (&end);
-	double dif = difftime (end,start);
-	printf ("Elasped time is %.2lf seconds.\r\n", dif );
-	return 0;
+	std::cout << float( clock () - begin_time ) /  CLOCKS_PER_SEC;
+    return 0;
 }
