@@ -133,7 +133,7 @@ public class TwitterSplit extends Configured implements Tool
 
         Configuration conf = getConf();
         //conf.set("mapreduce.input.keyvaluelinerecordreader.key.value.separator", "\t");
-        Job job = new Job(conf, "TwitterTopK");
+        Job job = new Job(conf, "TwitterSplit");
 
         job.setInputFormatClass(SequenceFileInputFormat.class);
 

@@ -14,14 +14,37 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TwitterSubscriptionsCount extends Configured implements Tool
 {
     public static class CountMapper extends Mapper<Text, Text, Text, IntWritable> {
-        private IntWritable one = new IntWritable(1);
+        private final HashMap<String, Integer> userSubscriptions = new HashMap<String, Integer>();
+
+        private IntWritable count = new IntWritable();
+        private Text user = new Text();
 
         public void map(Text key, Text value, Context context) throws IOException, InterruptedException {
-            context.write(key, one);
+            String user = key.toString();
+
+            if(! userSubscriptions.containsKey(user))
+                userSubscriptions.put(user, 1);
+            else {
+                int count = userSubscriptions.get(user);
+                userSubscriptions.put(user, count + 1);
+            }
+        }
+
+        @Override
+        protected void cleanup(Context context) throws IOException, InterruptedException {
+            for(Map.Entry<String, Integer> entry : userSubscriptions.entrySet())
+            {
+                user.set(entry.getKey());
+                count.set(entry.getValue());
+                context.write(user, count);
+            }
+            super.cleanup(context);
         }
     }
 
